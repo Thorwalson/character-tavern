@@ -64,6 +64,22 @@
     }
   ],
   "downloads": {
-    "categories": []
+    "categories": [
+      {
+        "title": "Pen & Paper",
+        "items": [
+          {
+            "title": "D&D Die Namensschmiede",
+            "desc": "Namen für alle D&D Klassen und Völker",
+            "file": "downloads/dnd-namensgenerator.html"
+          },
+          {
+            "title": "DSA - Aventurische Namensschmiede",
+            "desc": "Namen für alle Professionen und Völker",
+            "file": "downloads/dsa-namensgenerator.html"
+          }
+        ]
+      }
+    ]
   }
 }
