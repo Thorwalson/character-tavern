@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WoW Namensgenerator</title>
+<style>
+  :root { --bg:#14100c; --panel:#211a13; --line:#4a3a28; --gold:#f0c060; --text:#efe6d4; --muted:#a8987e; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; font-family:"Palatino Linotype",Palatino,Georgia,serif; color:var(--text);
+    background: radial-gradient(800px 420px at 80% -10%, rgba(200,70,50,.2), transparent 70%),
+                radial-gradient(800px 420px at 10% -10%, rgba(60,110,220,.2), transparent 70%), var(--bg); }
+  .wrap { max-width:860px; margin:0 auto; padding:1.4rem 1rem 3rem; }
+  h1 { margin:.2rem 0; text-align:center; color:var(--gold); letter-spacing:.06em; text-shadow:0 2px 0 #000; }
+  .sub { text-align:center; color:var(--muted); margin:0 0 1.4rem; }
+  .bar { display:flex; flex-wrap:wrap; gap:.8rem; justify-content:center; align-items:flex-end; margin-bottom:1rem; }
+  .bar label { display:flex; flex-direction:column; gap:.25rem; font-size:.85rem; color:var(--muted); }
+  select, button { font:inherit; }
+  select { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:.5rem .7rem; min-width:150px; }
+  .go { padding:.6rem 1.6rem; font-weight:700; cursor:pointer; color:#1b1204; background:linear-gradient(180deg,#ffdb8c,#d89a2b);
+    border:2px solid #fff3cf55; border-radius:10px; box-shadow:0 4px 0 #7a5410; }
+  .go:active { transform:translateY(2px); box-shadow:0 2px 0 #7a5410; }
+  .hint { text-align:center; color:var(--muted); font-size:.9rem; margin:.2rem 0 1rem; }
+  #names { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:.6rem; }
+  .name { display:flex; align-items:center; justify-content:space-between; gap:.4rem; padding:.55rem .75rem; background:var(--panel);
+    border:1px solid var(--line); border-radius:10px; cursor:pointer; font-size:1.15rem; transition:border-color .15s, transform .15s; }
+  .name:hover { border-color:var(--gold); transform:translateY(-1px); }
+  .name .star { background:none; border:0; cursor:pointer; font-size:1.1rem; color:var(--muted); padding:0 .2rem; }
+  .name .star.on { color:var(--gold); }
+  .name.copied { border-color:#7c7; }
+  h2 { font-size:1.05rem; color:var(--muted); margin:2rem 0 .6rem; letter-spacing:.06em; display:flex; justify-content:space-between; align-items:center; }
+  .ghost { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:.3rem .8rem; cursor:pointer; font-size:.85rem; }
+  .ghost:hover { border-color:var(--gold); color:var(--gold); }
+  .empty { color:var(--muted); font-size:.95rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Namensgenerator</h1>
+  <p class="sub">World of Warcraft – Namensvorschläge nach Volk, ohne Apostroph und höchstens 12 Buchstaben.</p>
+
+  <div class="bar">
+    <label>Volk <select id="race"></select></label>
+    <label>Geschlecht
+      <select id="gender"><option value="m">Männlich</option><option value="f">Weiblich</option><option value="x">Egal</option></select>
+    </label>
+    <label>Anzahl
+      <select id="count"><option>8</option><option selected>12</option><option>20</option></select>
+    </label>
+    <button class="go" id="go">🎲 Namen würfeln</button>
+  </div>
+  <p class="hint">Tippe einen Namen an, um ihn zu kopieren – mit ⭐ merkst du ihn dir.</p>
+  <div id="names"></div>
+
+  <h2>Favoriten <button class="ghost" id="copyFav">Alle kopieren</button></h2>
+  <div id="favs" style="display:flex;flex-wrap:wrap;gap:.5rem"></div>
+</div>
+<script>
+'use strict';
+/* Silbenbausteine je Volk (Platzhalter – gerne erweitern). pre + (mid) + suf */
+const RACES = {
+  'Mensch':      { pre:['Ald','Bran','Cael','Dar','Edmund','Gar','Hal','Lor','Mar','Ser','Tor','Wil'], mid:['en','er','ri','a'], m:['ric','wyn','ard','den','mund','win'], f:['elle','ina','wyn','lyn','ara','isa'] },
+  'Zwerg':       { pre:['Bor','Dur','Gim','Thor','Brom','Kaz','Mor','Tor','Hald','Dag'], mid:['in','ur','ak','gar'], m:['rin','grim','dan','mir','dok','bur'], f:['dis','wyn','ra','hild','na','git'] },
+  'Nachtelf':    { pre:['Ael','Ela','Silv','Thal','Ysa','Mal','Teld','Shan','Ilis','Fen'], mid:['an','ia','ar','el'], m:['iel','andil','oran','eth','ion','alas'], f:['ria','elle','ana','ysse','ora','isa'] },
+  'Gnom':        { pre:['Fizz','Zik','Bim','Nib','Gaz','Tink','Wiz','Pip','Zap','Mek'], mid:['le','ix','ob','er'], m:['wick','bolt','spark','gear','nick','zle'], f:['ette','ix','bell','zy','lin','spring'] },
+  'Draenei':     { pre:['Ara','Vel','Zer','Mak','Nor','Ata','Oru','Kae','Lur','Bel'], mid:['el','an','ur','ish'], m:['dor','nos','mir','dar','eth','ian'], f:['eth','ara','lia','esa','ine','ira'] },
+  'Worgen':      { pre:['Gil','Har','Cro','Wulf','Dar','Lor','Gre','Ced','Aeg','Ros'], mid:['an','ric','el','ow'], m:['wulf','mar','gar','ric','ton','den'], f:['wen','ina','ell','ia','ette','ra'] },
+  'Leerenelf':   { pre:['Zel','Vae','Xal','Nyx','Ul','Zar','Ish','Vor','Kel','Lyx'], mid:['an','is','ar','yx'], m:['ion','ath','thas','rix','el','os'], f:['ira','ysa','ael','ora','ine','esh'] },
+  'Orc':         { pre:['Gro','Mak','Thok','Zug','Dro','Gar','Gor','Hurk','Kil','Nazg','Urg','Rok'], mid:['ra','gash','ul','og'], m:['gar','nak','dok','grim','thar','osh'], f:['ka','ga','sha','za','ra','ka'] },
+  'Untoter':     { pre:['Mor','Vel','Gra','Sil','Dre','Mal','Nec','Vor','Cad','Ash'], mid:['ro','ma','ve','ze'], m:['mond','reth','mus','gar','dan','ius'], f:['ia','ana','elle','ra','ira','ine'] },
+  'Tauren':      { pre:['Bael','Cairn','Hamu','Kah','Mulg','Nal','Ona','Tah','Uni','Bru'], mid:['ha','mu','wa','ka'], m:['hoof','horn','run','tak','moon','dar'], f:['ana','ha','mia','wen','ya','sa'] },
+  'Troll':       { pre:['Zul','Jin','Vol','Rok','Zan','Sen','Tor','Mal','Raz','Zek'], mid:['ja','ka','ri','az'], m:['jin','tazz','rak','zul','dar','ko'], f:['jin','ka','ra','sa','ti','zi'] },
+  'Blutelf':     { pre:['Sun','Lor','Kael','Ver','Aura','Ral','Thal','Quel','Ana','Jar'], mid:['en','ia','ar','ael'], m:['thas','rion','dor','as','aran','el'], f:['iel','ria','elle','ana','ira','ine'] },
+  'Goblin':      { pre:['Gaz','Fiz','Bix','Gik','Nix','Rez','Zip','Krix','Sprock','Dex'], mid:['zle','it','ob','ik'], m:['bolt','fizz','nik','snap','wick','tix'], f:['zy','ix','bell','nik','tte','ie'] },
+  'Pandaren':    { pre:['Chen','Lin','Shu','Bao','Yun','Tao','Mei','Wan','Hao','Ren'], mid:['li','shan','ming','ye'], m:['shi','bao','yu','fu','long','tai'], f:['mei','lin','yun','xia','ling','hua'] },
+  'Dracthyr':    { pre:['Vor','Azu','Dra','Kae','Ner','Sar','Ixi','Tha','Vel','Zae'], mid:['ra','is','on','ex'], m:['thrax','ion','dar','ros','zor','ath'], f:['thyra','ysa','ira','ara','essa','ix'] }
+};
+const $ = (id) => document.getElementById(id);
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+const KEY = 'ct-wow-favoriten';
+let favs = [];
+try { favs = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) {}
+
+Object.keys(RACES).forEach((r) => { const o = document.createElement('option'); o.textContent = r; $('race').append(o); });
+
+function makeName(r, g) {
+  const R = RACES[r];
+  const gender = g === 'x' ? pick(['m', 'f']) : g;
+  for (let i = 0; i < 40; i++) {
+    let n = pick(R.pre);
+    if (Math.random() < .3) n += pick(R.mid);
+    n += pick(R[gender]);
+    n = cap(n.replace(/(.)\1\1+/g, '$1$1'));
+    if (n.length >= 3 && n.length <= 12) return n;
+  }
+  return cap(pick(R.pre) + pick(R[gender]));
+}
+
+function save() { try { localStorage.setItem(KEY, JSON.stringify(favs)); } catch (e) {} }
+function copy(t, node) {
+  const done = () => { if (node) { node.classList.add('copied'); setTimeout(() => node.classList.remove('copied'), 700); } };
+  if (navigator.clipboard) navigator.clipboard.writeText(t).then(done).catch(() => prompt('Zum Kopieren:', t)); else prompt('Zum Kopieren:', t);
+}
+
+function render() {
+  const box = $('names'); box.textContent = '';
+  const seen = new Set();
+  const n = +$('count').value;
+  while (seen.size < n) seen.add(makeName($('race').value, $('gender').value));
+  seen.forEach((name) => {
+    const d = document.createElement('div'); d.className = 'name';
+    const s = document.createElement('span'); s.textContent = name;
+    const star = document.createElement('button'); star.className = 'star' + (favs.includes(name) ? ' on' : ''); star.textContent = favs.includes(name) ? '★' : '☆';
+    star.title = 'Merken';
+    star.addEventListener('click', (e) => {
+      e.stopPropagation();
+      favs = favs.includes(name) ? favs.filter((f) => f !== name) : favs.concat(name);
+      save(); star.classList.toggle('on'); star.textContent = favs.includes(name) ? '★' : '☆'; renderFavs();
+    });
+    d.append(s, star);
+    d.addEventListener('click', () => copy(name, d));
+    box.append(d);
+  });
+}
+function renderFavs() {
+  const box = $('favs'); box.textContent = '';
+  if (!favs.length) { box.innerHTML = '<span class="empty">Noch nichts gemerkt.</span>'; return; }
+  favs.forEach((f) => {
+    const d = document.createElement('div'); d.className = 'name'; d.style.fontSize = '1rem';
+    const s = document.createElement('span'); s.textContent = f;
+    const x = document.createElement('button'); x.className = 'star'; x.textContent = '✕'; x.title = 'Entfernen';
+    x.addEventListener('click', (e) => { e.stopPropagation(); favs = favs.filter((v) => v !== f); save(); renderFavs(); render(); });
+    d.append(s, x); d.addEventListener('click', () => copy(f, d)); box.append(d);
+  });
+}
+$('go').addEventListener('click', render);
+['race', 'gender', 'count'].forEach((id) => $(id).addEventListener('change', render));
+$('copyFav').addEventListener('click', () => favs.length && copy(favs.join(', ')));
+render(); renderFavs();
+</script>
+</body>
+</html>

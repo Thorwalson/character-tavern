@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Character Tavern – Verwaltung</title>
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="bar">
+    <a class="brand" href="index.html">🍺 Character Tavern <small>Verwaltung</small></a>
+    <span class="spacer"></span>
+    <span id="dirty" class="dirty" hidden>● Ungespeicherte Änderungen</span>
+    <button class="btn" id="btnExport" type="button">📦 Als ZIP sichern</button>
+    <button class="btn gold" id="btnPublish" type="button">🚀 Veröffentlichen</button>
+  </header>
+
+  <main>
+    <section class="panel" id="connect">
+      <h2>1 · Verbindung zu GitHub</h2>
+      <p class="hint">Veröffentlichen schreibt direkt in dein Repository – GitHub Pages aktualisiert die Seite danach automatisch (dauert ca. 1 Minute).
+        Dein Token ist dein Admin-Zugang: ohne ihn kann niemand etwas veröffentlichen. Anleitung steht in der README.</p>
+      <div class="row">
+        <label>Benutzer / Organisation <input id="gOwner" placeholder="dein-github-name"></label>
+        <label>Repository <input id="gRepo" placeholder="character-tavern"></label>
+        <label>Branch <input id="gBranch" value="main"></label>
+        <label class="grow">Token (fine-grained, Contents: Read &amp; Write) <input id="gToken" type="password" placeholder="github_pat_…" autocomplete="off"></label>
+      </div>
+      <label class="chk"><input type="checkbox" id="gRemember"> Zugangsdaten auf diesem Gerät merken</label>
+    </section>
+
+    <section class="panel">
+      <h2>2 · Reiter &amp; Seiten</h2>
+      <p class="hint">Zieh eine fertige HTML-Datei auf einen Reiter, um sie als Unterpunkt einzufügen – oder auf die Fläche ganz unten, um einen neuen Reiter zu erstellen. Reihenfolge per Ziehen am ⠿ ändern.</p>
+      <div id="navList"></div>
+      <div class="drop big" id="dropNewTab">➕ HTML-Datei(en) hierher ziehen = <b>neuer Reiter</b><br><small>oder klicken zum Auswählen</small></div>
+      <button class="btn" id="btnNewTab" type="button">+ Leeren Reiter anlegen (zum Ausklappen)</button>
+    </section>
+
+    <section class="panel">
+      <h2>3 · Download-Bereich</h2>
+      <p class="hint">Alle Seiten erscheinen dort automatisch. Hier kannst du zusätzliche Kategorien mit beliebigen Dateien anlegen – Datei ins Feld ziehen, Download-Button entsteht von selbst.</p>
+      <div id="dlList"></div>
+      <button class="btn" id="btnNewCat" type="button">+ Neue Kategorie</button>
+    </section>
+
+    <section class="panel">
+      <h2>4 · Startseite (Tavern)</h2>
+      <div class="row"><label class="grow">Überschrift <input id="hHeading"></label></div>
+      <label>Einleitung <textarea id="hLead" rows="3"></textarea></label>
+      <div id="blockList"></div>
+      <button class="btn" id="btnNewBlock" type="button">+ Textblock</button>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <input type="file" id="picker" hidden>
+  <script src="js/zip.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

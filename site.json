@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "title": "Character Tavern",
+  "home": {
+    "heading": "Willkommen in der Character Tavern",
+    "lead": "Setz dich ans Feuer, bestell dir etwas Kühles und lass das Schicksal entscheiden: Hier findest du Namensgeneratoren und Zufallscharaktere für deine Lieblingswelten.",
+    "blocks": [
+      {
+        "heading": "Worum geht es hier?",
+        "text": "Die Character Tavern ist eine Sammlung von Namensgeneratoren und Charakter-Randomizern für Rollenspiele und Online-Welten. Jede Seite ist ein eigenes kleines Werkzeug – du kannst sie direkt im Browser benutzen oder dir herunterladen und offline verwenden."
+      },
+      {
+        "heading": "Du kannst dich nicht entscheiden?",
+        "text": "Dann überlass die Wahl einfach dem Schicksal. Die Zufallscharaktere würfeln dir Volk, Klasse und mehr – und wenn dir das Ergebnis nicht gefällt, wird einfach neu gewürfelt."
+      },
+      {
+        "heading": "Dir fehlt nur noch ein Name?",
+        "text": "Manchmal braucht es nur die richtige Inspiration. Die Namensgeneratoren liefern dir Vorschläge – nimm sie direkt oder bastle dir aus den Silben und Ideen deinen ganz eigenen Namen."
+      },
+      {
+        "heading": "Alles auch ohne Internet",
+        "text": "Alle Seiten laufen auch offline. Im Download-Bereich bekommst du jede Seite als einzelne Datei oder gleich alles als Paket."
+      }
+    ]
+  },
+  "nav": [
+    {
+      "id": "wow",
+      "title": "World of Warcraft",
+      "icon": "⚔️",
+      "logo": "assets/logo-wow.png",
+      "desc": "Zufallscharaktere und Namen für Azeroth.",
+      "children": [
+        { "id": "wow-zufallscharakter", "title": "Zufallscharakter", "file": "pages/wow-zufallscharakter.html" },
+        { "id": "wow-namensgenerator", "title": "Namensgenerator", "file": "pages/wow-namensgenerator.html" }
+      ]
+    },
+    {
+      "id": "pnp",
+      "title": "Pen & Paper",
+      "icon": "🎲",
+      "logo": "assets/logo-pnp.png",
+      "desc": "Helden und Namen für den Spieltisch.",
+      "children": [
+        { "id": "dnd", "title": "D&D", "file": "pages/dnd.html" },
+        { "id": "dsa", "title": "DSA", "file": "pages/dsa.html" }
+      ]
+    }
+  ],
+  "downloads": {
+    "categories": []
+  }
+}
