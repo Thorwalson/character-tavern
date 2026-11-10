@@ -31,8 +31,16 @@
       "logo": "assets/logo-wow.png",
       "desc": "Zufallscharaktere und Namen für Azeroth.",
       "children": [
-        { "id": "wow-zufallscharakter", "title": "Zufallscharakter", "file": "pages/wow-zufallscharakter.html" },
-        { "id": "wow-namensgenerator", "title": "Namensgenerator", "file": "pages/wow-namensgenerator.html" }
+        {
+          "id": "wow-zufallscharakter",
+          "title": "Zufallscharakter",
+          "file": "pages/wow-zufallscharakter.html"
+        },
+        {
+          "id": "wow-namensgenerator",
+          "title": "Namensgenerator",
+          "file": "pages/wow-namensgenerator.html"
+        }
       ]
     },
     {
@@ -42,8 +50,16 @@
       "logo": "assets/logo-pnp.png",
       "desc": "Helden und Namen für den Spieltisch.",
       "children": [
-        { "id": "dnd", "title": "D&D", "file": "pages/dnd.html" },
-        { "id": "dsa", "title": "DSA", "file": "pages/dsa.html" }
+        {
+          "id": "die-namensschmiede-dnd-namensgenerator",
+          "title": "D&D - Die Namensschmiede",
+          "file": "pages/dnd-namensgenerator.html"
+        },
+        {
+          "id": "aventurische-namensschmiede-dsa-namensgenerator",
+          "title": "DSA - Aventurische Namensschmiede",
+          "file": "pages/dsa-namensgenerator.html"
+        }
       ]
     }
   ],
