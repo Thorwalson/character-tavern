@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WoW Zufallscharakter</title>
+<style>
+  :root { --bg:#0c1220; --panel:#151d30; --line:#2c3a5c; --gold:#f0c060; --text:#e6e9f2; --muted:#9aa6c4; --accent:#f0c060; --accent-2:#6b88d6; }
+  body.horde { --accent:#e0523f; --accent-2:#a33; }
+  body.allianz { --accent:#4f86ee; --accent-2:#2d57b3; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; font-family:"Palatino Linotype",Palatino,Georgia,serif; color:var(--text);
+    background: radial-gradient(900px 500px at 50% -10%, rgba(107,136,214,.25), transparent 70%), var(--bg); transition: --accent .3s; }
+  .wrap { max-width:860px; margin:0 auto; padding:1.4rem 1rem 3rem; }
+  h1 { margin:.2rem 0 .2rem; text-align:center; color:var(--gold); letter-spacing:.06em; text-shadow:0 2px 0 #000; }
+  .sub { text-align:center; color:var(--muted); margin:0 0 1.4rem; }
+  .note { background:rgba(240,192,96,.08); border:1px dashed rgba(240,192,96,.45); color:#e9d6a6; border-radius:8px; padding:.55rem .8rem; font-size:.9rem; margin-bottom:1.2rem; }
+  .filters { display:flex; flex-wrap:wrap; gap:.8rem; justify-content:center; margin-bottom:1.2rem; }
+  .filters label { display:flex; flex-direction:column; gap:.25rem; font-size:.85rem; color:var(--muted); }
+  select, button { font:inherit; }
+  select { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:.5rem .7rem; min-width:150px; }
+  .roll { display:block; margin:0 auto 1.4rem; padding:.9rem 2.2rem; font-size:1.2rem; font-weight:700; letter-spacing:.05em; cursor:pointer;
+    color:#1b1204; background:linear-gradient(180deg,#ffdb8c,#d89a2b); border:2px solid #fff3cf55; border-radius:12px;
+    box-shadow:0 5px 0 #7a5410, 0 10px 24px rgba(0,0,0,.5); transition:transform .1s; }
+  .roll:active { transform:translateY(3px); box-shadow:0 2px 0 #7a5410; }
+  .die { display:inline-block; }
+  .rolling .die { animation:spin .6s ease-in-out; }
+  @keyframes spin { to { transform:rotate(540deg) scale(1.25); } }
+  .sheet { background:linear-gradient(180deg,var(--panel),#101728); border:2px solid var(--accent); border-radius:14px;
+    box-shadow:0 0 0 4px #0008, 0 0 32px color-mix(in srgb, var(--accent) 35%, transparent); padding:1.2rem; transition:border-color .3s, box-shadow .3s; }
+  .fac { text-align:center; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin-bottom:.8rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:.8rem; }
+  .field { background:#0b1120; border:1px solid var(--line); border-radius:10px; padding:.7rem .9rem; position:relative; }
+  .field small { display:block; color:var(--muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+  .field b { display:block; font-size:1.25rem; margin-top:.15rem; }
+  .field label { position:absolute; top:.55rem; right:.7rem; font-size:.78rem; color:var(--muted); cursor:pointer; user-select:none; }
+  .role { color:var(--accent); }
+  .actions { display:flex; gap:.6rem; justify-content:center; margin-top:1rem; flex-wrap:wrap; }
+  .ghost { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:.5rem 1rem; cursor:pointer; }
+  .ghost:hover { border-color:var(--accent); color:var(--accent); }
+  h2 { font-size:1.05rem; color:var(--muted); margin:1.8rem 0 .6rem; letter-spacing:.06em; }
+  #history { list-style:none; margin:0; padding:0; display:grid; gap:.4rem; }
+  #history li { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:.45rem .8rem; font-size:.95rem; display:flex; justify-content:space-between; gap:1rem; }
+  #history li span:last-child { color:var(--muted); }
+  .msg { text-align:center; color:#ffb4a0; min-height:1.4em; margin:.6rem 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Zufallscharakter</h1>
+  <p class="sub">World of Warcraft – lass das Schicksal deinen nächsten Helden wählen.</p>
+  <div class="note">Platzhalter-Daten: Welche Volk/Klasse-Kombinationen aktuell erlaubt sind, bitte oben im Skript (<code>RACES</code>, <code>DH_RACES</code>) nach deinem Spielstand anpassen.</div>
+
+  <div class="filters">
+    <label>Fraktion
+      <select id="fFac"><option value="any">Egal</option><option value="allianz">Allianz</option><option value="horde">Horde</option></select>
+    </label>
+    <label>Rolle
+      <select id="fRole"><option value="any">Egal</option><option value="Tank">Tank</option><option value="Heiler">Heiler</option><option value="Schaden">Schaden</option></select>
+    </label>
+  </div>
+
+  <button class="roll" id="roll"><span class="die">🎲</span> Schicksal würfeln</button>
+  <div class="msg" id="msg"></div>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="fac" id="fac"></div>
+    <div class="grid">
+      <div class="field"><label><input type="checkbox" id="lockRace"> 🔒</label><small>Volk</small><b id="race"></b></div>
+      <div class="field"><label><input type="checkbox" id="lockCls"> 🔒</label><small>Klasse</small><b id="cls"></b></div>
+      <div class="field"><small>Spezialisierung</small><b id="spec"></b></div>
+      <div class="field"><small>Rolle</small><b class="role" id="role"></b></div>
+      <div class="field"><label><input type="checkbox" id="lockProf"> 🔒</label><small>Berufe</small><b id="prof"></b></div>
+      <div class="field"><small>Eigenart (optional)</small><b id="quirk" style="font-size:1rem"></b></div>
+    </div>
+    <div class="actions">
+      <button class="ghost" id="copy">📋 Kopieren</button>
+      <button class="ghost" id="again">Nochmal würfeln</button>
+    </div>
+  </div>
+
+  <h2>Letzte Würfe</h2>
+  <ul id="history"></ul>
+</div>
+<script>
+'use strict';
+/* ---- Daten (Platzhalter, bitte nach Bedarf anpassen) ---- */
+const RACES = [
+  { n:'Mensch', f:'allianz' }, { n:'Zwerg', f:'allianz' }, { n:'Nachtelf', f:'allianz' }, { n:'Gnom', f:'allianz' },
+  { n:'Draenei', f:'allianz' }, { n:'Worgen', f:'allianz' }, { n:'Leerenelf', f:'allianz' }, { n:'Dunkeleisenzwerg', f:'allianz' },
+  { n:'Kul Tiraner', f:'allianz' }, { n:'Mechagnom', f:'allianz' },
+  { n:'Orc', f:'horde' }, { n:'Untoter', f:'horde' }, { n:'Tauren', f:'horde' }, { n:'Troll', f:'horde' }, { n:'Blutelf', f:'horde' },
+  { n:'Goblin', f:'horde' }, { n:'Nachtgeborener', f:'horde' }, { n:'Hochbergtauren', f:'horde' }, { n:'Mag\'har', f:'horde' },
+  { n:'Vulpera', f:'horde' }, { n:'Zandalari-Troll', f:'horde' },
+  { n:'Pandaren', f:'neutral' }, { n:'Dracthyr', f:'neutral', only:'Rufer' }, { n:'Irdener', f:'neutral' }
+];
+const DH_RACES = ['Nachtelf', 'Leerenelf', 'Blutelf', 'Nachtgeborener']; // wer darf Dämonenjäger sein?
+const CLASSES = {
+  'Krieger':      [['Waffen','Schaden'], ['Furor','Schaden'], ['Schutz','Tank']],
+  'Paladin':      [['Heilig','Heiler'], ['Schutz','Tank'], ['Vergeltung','Schaden']],
+  'Jäger':        [['Tierherrschaft','Schaden'], ['Treffsicherheit','Schaden'], ['Überleben','Schaden']],
+  'Schurke':      [['Meucheln','Schaden'], ['Gesetzlosigkeit','Schaden'], ['Täuschung','Schaden']],
+  'Priester':     [['Disziplin','Heiler'], ['Heilig','Heiler'], ['Schatten','Schaden']],
+  'Todesritter':  [['Blut','Tank'], ['Frost','Schaden'], ['Unheilig','Schaden']],
+  'Schamane':     [['Elementar','Schaden'], ['Verstärkung','Schaden'], ['Wiederherstellung','Heiler']],
+  'Magier':       [['Arkan','Schaden'], ['Feuer','Schaden'], ['Frost','Schaden']],
+  'Hexenmeister': [['Gebrechen','Schaden'], ['Dämonologie','Schaden'], ['Zerstörung','Schaden']],
+  'Mönch':        [['Braumeister','Tank'], ['Nebelwirker','Heiler'], ['Windläufer','Schaden']],
+  'Druide':       [['Gleichgewicht','Schaden'], ['Wildheit','Schaden'], ['Wächter','Tank'], ['Wiederherstellung','Heiler']],
+  'Dämonenjäger': [['Verwüstung','Schaden'], ['Rachsucht','Tank']],
+  'Rufer':        [['Verheerung','Schaden'], ['Bewahrung','Heiler'], ['Verstärkung','Schaden']]
+};
+const PROFS = ['Alchemie','Schmiedekunst','Verzauberkunst','Ingenieurskunst','Inschriftenkunde','Juwelenschleifen','Lederverarbeitung','Schneiderei','Bergbau','Kräuterkunde','Kürschnerei'];
+const QUIRKS = ['Nur Quests im Startgebiet, bis Stufe 10', 'Nur grüne Ausrüstung bis Stufe 30', 'Kein Reittier, bis du es dir ehrlich verdient hast',
+  'Gib dir einen Hintergrundsatz und spiele ihn durch', 'Erkunde zuerst jede Kneipe im Startgebiet', 'Keine Gruppen-Suche – nur Freunde und Gilde',
+  'Sammle zuerst alle Haustiere der Startzone', 'Trage nur Kleidung, die zu deiner Geschichte passt', 'Keine Heiltränke bis Stufe 20', 'Kein Addon, nur Bauchgefühl'];
+
+const $ = (id) => document.getElementById(id);
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const history = [];
+let cur = null;
+
+function compatible(r, c) {
+  if (r.only) return c === r.only;
+  if (c === 'Rufer') return false;
+  if (c === 'Dämonenjäger') return DH_RACES.includes(r.n);
+  return true;
+}
+
+function roll() {
+  const fFac = $('fFac').value, fRole = $('fRole').value;
+  const lockedRace = $('lockRace').checked && cur ? cur.race : null;
+  const lockedCls = $('lockCls').checked && cur ? cur.cls : null;
+  const pairs = [];
+  for (const r of RACES) {
+    if (lockedRace && r.n !== lockedRace.n) continue;
+    if (fFac !== 'any' && r.f !== 'neutral' && r.f !== fFac) continue;
+    for (const c of Object.keys(CLASSES)) {
+      if (lockedCls && c !== lockedCls) continue;
+      if (!compatible(r, c)) continue;
+      if (!CLASSES[c].some((s) => fRole === 'any' || s[1] === fRole)) continue;
+      pairs.push([r, c]);
+    }
+  }
+  if (!pairs.length) { $('msg').textContent = 'Mit diesen Filtern und Sperren gibt es keine passende Kombination.'; return; }
+  $('msg').textContent = '';
+  const [race, cls] = pick(pairs);
+  const spec = pick(CLASSES[cls].filter((s) => fRole === 'any' || s[1] === fRole));
+  const faction = race.f === 'neutral' ? (fFac !== 'any' ? fFac : pick(['allianz', 'horde'])) : race.f;
+  let profs = cur && $('lockProf').checked ? cur.profs : [];
+  if (!profs.length) { const p = PROFS.slice().sort(() => Math.random() - .5); profs = p.slice(0, 2); }
+  cur = { race, cls, spec, faction, profs, quirk: pick(QUIRKS) };
+  show();
+}
+
+function show() {
+  const c = cur;
+  $('sheet').hidden = false;
+  document.body.className = c.faction;
+  $('fac').textContent = c.faction === 'horde' ? 'Für die Horde!' : 'Für die Allianz!';
+  $('race').textContent = c.race.n;
+  $('cls').textContent = c.cls;
+  $('spec').textContent = c.spec[0];
+  $('role').textContent = c.spec[1];
+  $('prof').textContent = c.profs.join(' & ');
+  $('quirk').textContent = c.quirk;
+  history.unshift(`${c.race.n} ${c.cls}`.concat('|', c.spec[0] + ' · ' + c.spec[1]));
+  if (history.length > 8) history.pop();
+  $('history').innerHTML = history.map((h) => { const [a, b] = h.split('|'); return `<li><span>${a}</span><span>${b}</span></li>`; }).join('');
+}
+
+function go() {
+  const b = document.body;
+  b.classList.remove('rolling'); void b.offsetWidth; b.classList.add('rolling');
+  setTimeout(() => { roll(); b.classList.remove('rolling'); }, 350);
+}
+$('roll').addEventListener('click', go);
+$('again').addEventListener('click', go);
+$('copy').addEventListener('click', () => {
+  if (!cur) return;
+  const t = `${cur.race.n} ${cur.cls} (${cur.spec[0]}, ${cur.spec[1]}) – ${cur.faction === 'horde' ? 'Horde' : 'Allianz'} – Berufe: ${cur.profs.join(', ')}`;
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { $('copy').textContent = '✔ Kopiert'; setTimeout(() => $('copy').textContent = '📋 Kopieren', 1400); }).catch(() => prompt('Zum Kopieren:', t));
+});
+</script>
+</body>
+</html>

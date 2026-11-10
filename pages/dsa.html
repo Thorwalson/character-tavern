@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSA Helden &amp; Namen</title>
+<style>
+  :root { --bg:#1d1a14; --panel:#2a251b; --line:#5a4b2e; --gold:#c9a24a; --text:#efe6cf; --muted:#a99c7c; --green:#5f7f4a; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; font-family:"Palatino Linotype",Palatino,Georgia,serif; color:var(--text);
+    background: radial-gradient(800px 420px at 50% -10%, rgba(201,162,74,.22), transparent 70%), var(--bg); }
+  .wrap { max-width:900px; margin:0 auto; padding:1.4rem 1rem 3rem; }
+  h1 { margin:.2rem 0; text-align:center; color:var(--gold); letter-spacing:.08em; text-shadow:0 2px 0 #000; }
+  h1::before, h1::after { content:"✦"; margin:0 .6rem; font-size:.7em; }
+  .sub { text-align:center; color:var(--muted); margin:0 0 1.2rem; }
+  .tabs { display:flex; justify-content:center; gap:.5rem; margin-bottom:1.2rem; }
+  .tab { font:inherit; font-weight:700; padding:.55rem 1.2rem; cursor:pointer; color:var(--muted); background:var(--panel); border:1px solid var(--line); border-radius:8px 8px 0 0; }
+  .tab.on { color:var(--gold); border-color:var(--gold); box-shadow:0 2px 0 var(--gold); }
+  .bar { display:flex; flex-wrap:wrap; gap:.8rem; justify-content:center; align-items:flex-end; margin-bottom:1.2rem; }
+  .bar label { display:flex; flex-direction:column; gap:.25rem; font-size:.85rem; color:var(--muted); }
+  select, button { font:inherit; }
+  select { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:.5rem .7rem; min-width:160px; }
+  .go { padding:.65rem 1.7rem; font-weight:700; cursor:pointer; color:#1d1608; background:linear-gradient(180deg,#e6c46f,#b78a2b); border:2px solid #fff3cf44; border-radius:8px; box-shadow:0 4px 0 #5e4510; }
+  .go:active { transform:translateY(2px); box-shadow:0 2px 0 #5e4510; }
+  .sheet { background:linear-gradient(180deg,#312a1d,#221d14); border:2px solid var(--gold); border-radius:10px; padding:1.2rem; box-shadow:0 0 0 4px #0006; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:.7rem; margin-bottom:1rem; }
+  .field { background:#17130d; border:1px solid var(--line); border-radius:8px; padding:.6rem .85rem; position:relative; }
+  .field small { display:block; color:var(--muted); font-size:.75rem; text-transform:uppercase; letter-spacing:.1em; }
+  .field b { display:block; font-size:1.2rem; margin-top:.1rem; }
+  .field .re { position:absolute; top:.45rem; right:.5rem; background:none; border:0; color:var(--muted); cursor:pointer; font-size:1rem; }
+  .field .re:hover { color:var(--gold); }
+  .actions { display:flex; gap:.6rem; justify-content:center; margin-top:.4rem; }
+  .ghost { background:transparent; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:.45rem 1rem; cursor:pointer; }
+  .ghost:hover { border-color:var(--gold); color:var(--gold); }
+  .note { text-align:center; color:var(--muted); font-size:.85rem; margin-top:.8rem; }
+  .namegrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:.6rem; }
+  .name { padding:.6rem .8rem; background:var(--panel); border:1px solid var(--line); border-radius:8px; cursor:pointer; font-size:1.1rem; transition:border-color .15s, transform .15s; }
+  .name:hover { border-color:var(--gold); transform:translateY(-1px); }
+  .name.copied { border-color:#7c7; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Das Schwarze Auge</h1>
+  <p class="sub">Zufallshelden und Namen für Aventurien.</p>
+  <div class="tabs">
+    <button class="tab on" data-tab="char">🛡️ Zufallsheld</button>
+    <button class="tab" data-tab="names">📜 Namen</button>
+  </div>
+
+  <section id="charTab">
+    <div class="bar"><button class="go" id="goChar">🎲 Helden würfeln</button></div>
+    <div class="sheet" id="sheet" hidden>
+      <div class="grid">
+        <div class="field"><button class="re" data-re="name">↻</button><small>Name</small><b id="name"></b></div>
+        <div class="field"><button class="re" data-re="spezies">↻</button><small>Spezies</small><b id="spezies"></b></div>
+        <div class="field"><button class="re" data-re="kultur">↻</button><small>Kultur</small><b id="kultur"></b></div>
+        <div class="field"><button class="re" data-re="beruf">↻</button><small>Profession</small><b id="beruf"></b></div>
+        <div class="field"><button class="re" data-re="gott">↻</button><small>Gottheit</small><b id="gott"></b></div>
+        <div class="field"><button class="re" data-re="trait">↻</button><small>Eigenheit</small><b id="trait" style="font-size:1rem"></b></div>
+      </div>
+      <div class="actions"><button class="ghost" id="copyChar">📋 Kopieren</button></div>
+    </div>
+    <p class="note">Platzhalter-Daten: Spezies, Kulturen und Professionen oben im Skript nach deiner Regelversion anpassen.</p>
+  </section>
+
+  <section id="namesTab" hidden>
+    <div class="bar">
+      <label>Spezies / Kultur <select id="nRace"></select></label>
+      <label>Geschlecht <select id="nGender"><option value="m">Männlich</option><option value="f">Weiblich</option><option value="x">Egal</option></select></label>
+      <button class="go" id="goNames">🎲 Namen würfeln</button>
+    </div>
+    <div id="namelist"></div>
+  </section>
+</div>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const DATA = {
+  'Mensch (Mittelreich)': { spezies:'Mensch', kultur:'Mittelreich', f:['Ale','Bran','Cor','Dor','Ger','Hal','Lud','Rah','Tar','Wolf'], m:['brecht','gar','hard','mar','win','ward'], w:['linde','trud','wyn','hild','ia','ine'], fam:['von Gareth','von Havena','von Kuslik','Eichenhain','Rabenstein','Sturmfels'] },
+  'Mensch (Thorwal)':    { spezies:'Mensch', kultur:'Thorwal', f:['Ask','Bjorn','Eir','Gun','Hjal','Ragn','Sig','Thor','Ulf','Yrs'], m:['mar','ulf','ar','vald','nir','dar'], w:['hild','run','dis','a','id','vi'], fam:['Thorwaler Sohn','Hjaldasdottir','Ottajaskos','Eisenfaust','Wellenreiter'] },
+  'Mensch (Tulamiden)':  { spezies:'Mensch', kultur:'Tulamidisch', f:['Ab','Ha','Is','Ka','Mah','Nar','Ras','Sal','Yas','Zah'], m:['dul','shid','im','ar','ir','ak'], w:['mina','fira','ida','bia','ira','nah'], fam:['ibn Kadir','ibn Rashid','saba Amira','ben Aran','ibn Hasan'] },
+  'Elf (Waldelf)':       { spezies:'Elf', kultur:'Waldelfen', f:['Aly','Cae','Fen','Lor','Mir','Nay','Sil','Tha','Yli','Ere'], m:['ron','vir','las','dor','nil','al'], w:['ia','ana','ira','ys','eth','ela'], fam:['Blattwisperer','Mondlied','Nebelwanderer','Sternentau'] },
+  'Zwerg (Ambosszwerg)': { spezies:'Zwerg', kultur:'Ambosszwerge', f:['Ag','Bar','Dur','Gor','Gim','Har','Rog','Tor','Um','Xor'], m:['rax','bold','grim','dak','mur','bur'], w:['hild','ga','wina','dra','bja','run'], fam:['Sohn des Boron','Hammerhand','Tiefenfels','Erzbart','Kupferkessel'] },
+  'Halbelf (Auelfen)':   { spezies:'Halbelf', kultur:'Auelfen', f:['Ar','El','Is','Kae','Lan','Ni','Ro','Sa','Tir','Vae'], m:['wen','is','dal','ron','ios','ael'], w:['wen','ia','ira','elle','ana','iel'], fam:['Auenwandler','Zwielicht','Bachlied','Weidenhain'] }
+};
+const PROF = ['Abenteurer','Söldner','Gelehrter','Magier','Händler','Streuner','Jäger','Geweihter','Schmied','Gaukler','Dieb','Kapitän','Heilerin','Ritter','Kräutersammler','Spion'];
+const GODS = ['Praios (Gerechtigkeit)','Rondra (Mut)','Efferd (Wasser)','Travia (Gastfreundschaft)','Boron (Tod & Schlaf)','Hesinde (Weisheit)','Firun (Jagd)','Tsa (Wandel)','Phex (Handel & Diebe)','Peraine (Heilung)','Ingerimm (Handwerk)','Rahja (Lebensfreude)','Swafnir (Wale, Thorwal)'];
+const TRAITS = ['Kann keine Schulden vergessen','Sammelt Schnapsrezepte','Hat einen verdächtig treuen Hund','Redet im Schlaf von alten Zeiten','Fürchtet sich vor Pferden','Träumt vom eigenen Gasthaus','Trägt eine Reliquie, an die niemand glaubt','Hat eine Narbe mit zu guter Geschichte','Misstraut Magiern aus Prinzip','Singt falsch, aber laut'];
+let cur = null;
+
+function nameFor(key, g) {
+  const D = DATA[key];
+  const gender = g === 'x' || !g ? pick(['m', 'w']) : (g === 'f' ? 'w' : 'm');
+  return cap((pick(D.f) + pick(D[gender])).replace(/(.)\1\1+/g, '$1$1').toLowerCase()) + ' ' + pick(D.fam);
+}
+function rollAll() {
+  const key = pick(Object.keys(DATA));
+  cur = { key, spezies: DATA[key].spezies, kultur: DATA[key].kultur, beruf: pick(PROF), gott: pick(GODS), trait: pick(TRAITS), name: nameFor(key, 'x') };
+  show();
+}
+function reroll(w) {
+  if (!cur) return;
+  if (w === 'spezies' || w === 'kultur') { cur.key = pick(Object.keys(DATA)); cur.spezies = DATA[cur.key].spezies; cur.kultur = DATA[cur.key].kultur; cur.name = nameFor(cur.key, 'x'); }
+  else if (w === 'name') cur.name = nameFor(cur.key, 'x');
+  else cur[w] = pick({ beruf:PROF, gott:GODS, trait:TRAITS }[w]);
+  show();
+}
+function show() { $('sheet').hidden = false; ['name','spezies','kultur','beruf','gott','trait'].forEach((k) => $(k).textContent = cur[k]); }
+
+document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('on', x === t));
+  $('charTab').hidden = t.dataset.tab !== 'char';
+  $('namesTab').hidden = t.dataset.tab !== 'names';
+}));
+document.querySelectorAll('[data-re]').forEach((b) => b.addEventListener('click', () => reroll(b.dataset.re)));
+$('goChar').addEventListener('click', rollAll);
+$('copyChar').addEventListener('click', () => {
+  if (!cur) return;
+  const t = `${cur.name} – ${cur.spezies} (${cur.kultur}), ${cur.beruf}, Gottheit: ${cur.gott}`;
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { $('copyChar').textContent = '✔ Kopiert'; setTimeout(() => $('copyChar').textContent = '📋 Kopieren', 1400); }).catch(() => prompt('Zum Kopieren:', t));
+});
+
+Object.keys(DATA).forEach((r) => { const o = document.createElement('option'); o.textContent = r; $('nRace').append(o); });
+function renderNames() {
+  const box = $('namelist'); box.textContent = '';
+  const wrap = document.createElement('div'); wrap.className = 'namegrid';
+  const seen = new Set();
+  while (seen.size < 12) seen.add(nameFor($('nRace').value, $('nGender').value));
+  seen.forEach((n) => {
+    const d = document.createElement('div'); d.className = 'name'; d.textContent = n;
+    d.addEventListener('click', () => { (navigator.clipboard ? navigator.clipboard.writeText(n) : Promise.reject()).then(() => { d.classList.add('copied'); setTimeout(() => d.classList.remove('copied'), 700); }).catch(() => prompt('Zum Kopieren:', n)); });
+    wrap.append(d);
+  });
+  box.append(wrap);
+}
+$('goNames').addEventListener('click', renderNames);
+$('nRace').addEventListener('change', renderNames);
+$('nGender').addEventListener('change', renderNames);
+renderNames();
+</script>
+</body>
+</html>
