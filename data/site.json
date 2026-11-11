@@ -32,9 +32,9 @@
       "desc": "Zufallscharaktere und Namen für Azeroth.",
       "children": [
         {
-          "id": "wow-zufallscharakter",
-          "title": "Zufallscharakter",
-          "file": "pages/wow-zufallscharakter.html"
+          "id": "wow-charakter-randomizer-forever-retail",
+          "title": "WoW Charakter-Randomizer – Forever & Retail",
+          "file": "pages/wow-charakter-randomizer-3-0.html"
         },
         {
           "id": "wow-namensgenerator",
